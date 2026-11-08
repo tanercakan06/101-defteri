@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B3B2A">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 40%22%3E%3Crect width=%2232%22 height=%2240%22 rx=%226%22 fill=%22%23FFFDF6%22/%3E%3Ctext x=%2216%22 y=%2224%22 font-size=%2212%22 font-weight=%22800%22 text-anchor=%22middle%22 fill=%22%23C1232B%22 font-family=%22sans-serif%22%3E101%3C/text%3E%3C/svg%3E">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Eşli 101 Defteri</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Onest:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: an okey table seen from above. Green felt holds the racks (teams or players) and the round counter; the ledger, chart and stats sit below on paper. Setup deals choice cards onto the felt. */
+:root {
+  --bg: #E6ECE7;
+  --surface: #F8FAF7;
+  --surface-2: #EEF2EE;
+  --ink: #15201A;
+  --muted: #5B6A61;
+  --line: #D0D9D2;
+  --felt: #0F4A36;
+  --felt-ink: #F1F7F2;
+  --table: #14573F; --table-2: #0B3B2A; --table-ink: #EEF6F0; --table-muted: #A9C9B7; --table-dot: rgba(255, 255, 255, .18);
+  --tile: #FFFDF6; --tile-edge: #D7D4C6; --card-ink: #1B1F1C; --card-muted: #66685E;
+  --tile-red: #C1232B; --tile-blue: #1B58A3; --tile-black: #1E2124; --tile-yellow: #B47400;
+  --red: #B8222A; --blue: #1B58A3; --blk: #2B302D; --yel: #956100;
+  --red-soft: #F6E3E3; --blue-soft: #E1EAF6; --blk-soft: #E2E7E3; --yel-soft: #F5EAD2;
+  --good: #17784A; --warn: #A3440C;
+  --backdrop: rgba(12, 24, 18, .45);
+  --shadow: 0 1px 2px rgba(20, 40, 30, .08), 0 8px 24px rgba(20, 40, 30, .06);
+  --f-display: "Bricolage Grotesque", "Avenir Next Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A1511; --surface: #11201A; --surface-2: #172A22; --ink: #E6EEE8; --muted: #93A69A; --line: #23392F;
+    --felt: #2E9A6E; --felt-ink: #06140E; --tile: #EFEBDD; --tile-edge: #B9B39F;
+    --table: #11412F; --table-2: #07231A; --table-ink: #EEF6F0; --table-muted: #8FB4A0; --table-dot: rgba(255, 255, 255, .14);
+    --red: #F27178; --blue: #7AAEF0; --blk: #D5DCD7; --yel: #E9B651;
+    --red-soft: #3A1B1E; --blue-soft: #16273F; --blk-soft: #24322B; --yel-soft: #3A2E14;
+    --good: #5ACB92; --warn: #F0A06A;
+    --backdrop: rgba(0, 0, 0, .6); --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A1511; --surface: #11201A; --surface-2: #172A22; --ink: #E6EEE8; --muted: #93A69A; --line: #23392F;
+  --felt: #2E9A6E; --felt-ink: #06140E; --tile: #EFEBDD; --tile-edge: #B9B39F;
+  --table: #11412F; --table-2: #07231A; --table-ink: #EEF6F0; --table-muted: #8FB4A0; --table-dot: rgba(255, 255, 255, .14);
+  --red: #F27178; --blue: #7AAEF0; --blk: #D5DCD7; --yel: #E9B651;
+  --red-soft: #3A1B1E; --blue-soft: #16273F; --blk-soft: #24322B; --yel-soft: #3A2E14;
+  --good: #5ACB92; --warn: #F0A06A;
+  --backdrop: rgba(0, 0, 0, .6); --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--felt); outline-offset: 2px; }
+.num, table, output { font-variant-numeric: tabular-nums; }
+
+/* seat colours: the four okey tile colours */
+.c0 { --c: var(--red); --cs: var(--red-soft); --ct: var(--tile-red); }
+.c1 { --c: var(--blue); --cs: var(--blue-soft); --ct: var(--tile-blue); }
+.c2 { --c: var(--blk); --cs: var(--blk-soft); --ct: var(--tile-black); }
+.c3 { --c: var(--yel); --cs: var(--yel-soft); --ct: var(--tile-yellow); }
+
+.wrap { max-width: 900px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 72px; display: grid; gap: 18px; }
+
+/* top bar */
+.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.mini-tile { width: 34px; height: 42px; border-radius: 6px; background: var(--tile); box-shadow: inset 0 -4px 0 var(--tile-edge), 0 1px 2px rgba(0,0,0,.15); display: grid; place-items: center; font-family: var(--f-display); font-weight: 800; font-size: 13px; color: var(--tile-red); letter-spacing: -.02em; padding-bottom: 4px; flex: none; }
+.brand h1 { font-family: var(--f-display); font-weight: 800; font-size: 1.3rem; letter-spacing: -.02em; margin: 0; line-height: 1.1; }
+.brand p { margin: 0; color: var(--muted); font-size: .8rem; }
+.top .sp { flex: 1; }
+.ghost { background: transparent; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-weight: 600; font-size: .88rem; }
+.ghost:hover { background: var(--surface); }
+.series { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; font-family: var(--f-display); font-size: .95rem; padding: 6px 10px; border-radius: 10px; background: var(--surface); }
+.series span { color: var(--c); }
+.series em { font-style: normal; color: var(--muted); font-weight: 600; }
+
+/* board on felt */
+.board { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: stretch; padding: 14px; border-radius: 26px; background: radial-gradient(120% 95% at 50% 35%, var(--table), var(--table-2)); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 10px 34px rgba(0,0,0,.28), var(--shadow); }
+.board.solo { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.team { background: var(--surface); border-radius: 18px; padding: 14px; display: grid; gap: 12px; box-shadow: 0 3px 0 rgba(0,0,0,.2); border: 2px solid transparent; transition: border-color .25s; align-content: start; min-width: 0; }
+.team.lead { border-color: var(--c); }
+.team-head { display: flex; align-items: center; gap: 8px; justify-content: space-between; min-height: 26px; }
+.team h2 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 1.05rem; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; color: var(--c); }
+.lead-chip { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 3px 8px; border-radius: 99px; white-space: nowrap; background: var(--cs); color: var(--c); }
+.behind { font-size: .78rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.bigtile { background: var(--tile); border-radius: 12px; box-shadow: inset 0 -7px 0 var(--tile-edge), 0 2px 3px rgba(0,0,0,.12); padding: 14px 6px 22px; display: grid; justify-items: center; gap: 6px; }
+.bigtile .num { font-family: var(--f-display); font-weight: 800; font-size: clamp(2.1rem, 8.5vw, 3.9rem); line-height: 1; letter-spacing: -.035em; color: var(--ct); }
+.solo .bigtile .num { font-size: clamp(1.9rem, 6.5vw, 3rem); }
+.bigtile .dot { width: 11px; height: 11px; border-radius: 50%; background: var(--ct); }
+.bigtile.bump { animation: bump .45s ease; }
+@keyframes bump { 35% { transform: translateY(-5px); } }
+.players { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.players li { display: flex; justify-content: space-between; gap: 8px; font-size: .9rem; padding: 4px 2px; border-bottom: 1px solid var(--line); }
+.players li:last-child { border-bottom: 0; }
+.players span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; color: var(--muted); }
+.players b { font-weight: 600; }
+.meta { font-size: .82rem; color: var(--muted); display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+.meta b { color: var(--ink); }
+
+.round { display: grid; align-content: center; justify-items: center; gap: 8px; padding: 6px 4px; min-width: 96px; }
+.round .lbl { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--table-muted); font-weight: 600; }
+.round .cnt { font-family: var(--f-display); font-weight: 800; font-size: 2.4rem; line-height: 1; letter-spacing: -.03em; color: var(--table-ink); }
+.round .cnt small { font-size: 1rem; color: var(--table-muted); font-weight: 600; letter-spacing: 0; }
+.dots { display: grid; grid-template-columns: repeat(4, 10px); gap: 5px; justify-content: center; }
+.dots i { width: 10px; height: 10px; border-radius: 3px; background: var(--table-dot); }
+.dots i.w { background: var(--ct); box-shadow: 0 0 0 1px rgba(255,255,255,.4); }
+.dots i.wx { background: var(--table-muted); }
+.dots i.next { background: transparent; box-shadow: inset 0 0 0 1.5px var(--table-ink); }
+.diff { font-size: .8rem; color: var(--table-muted); text-align: center; }
+.diff b { color: var(--table-ink); }
+.dealer { font-size: .78rem; color: var(--table-muted); display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 99px; background: rgba(255,255,255,.09); white-space: nowrap; max-width: 100%; overflow: hidden; }
+.dealer b { color: var(--table-ink); font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+.dealer svg { width: 14px; height: 14px; flex: none; }
+
+/* horizontal round strip: solo always, teams on phones */
+.board.solo .round { grid-column: 1 / -1; grid-template-columns: auto auto 1fr auto; justify-items: start; align-items: center; gap: 4px 14px; padding: 0 4px 2px; }
+.board.solo .round .dots { justify-self: end; grid-template-columns: repeat(11, 10px); }
+.board.solo .round .diff { text-align: left; }
+@media (max-width: 600px) {
+  .board { grid-template-columns: 1fr 1fr; padding: 12px 10px 10px; border-radius: 20px; }
+  .board.solo { grid-template-columns: 1fr 1fr; }
+  .board .round { grid-column: 1 / -1; order: -1; grid-template-columns: auto auto 1fr; justify-items: start; align-items: center; gap: 6px 12px; padding: 0 2px 2px; }
+  .board .round .cnt { font-size: 1.8rem; }
+  .board .round .dots { grid-template-columns: repeat(11, 9px); gap: 4px; justify-self: end; }
+  .board .round .dots i { width: 9px; height: 9px; }
+  .board .round .diff { grid-column: 1 / 3; text-align: left; }
+  .board .round .dealer { grid-column: 3; justify-self: end; }
+  .team { padding: 12px; }
+}
+
+.cta { display: flex; gap: 10px; flex-wrap: wrap; }
+.primary { background: var(--felt); color: var(--felt-ink); border: 0; border-radius: 14px; padding: 15px 22px; font-weight: 700; font-size: 1.05rem; flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 3px 0 rgba(0,0,0,.18); }
+.primary:hover { filter: brightness(1.06); }
+.primary:active { transform: translateY(1px); box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+.primary[disabled] { opacity: .45; cursor: not-allowed; }
+.primary .plus { font-family: var(--f-display); font-size: 1.4rem; line-height: 1; }
+
+.over { position: relative; overflow: hidden; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 18px; border-radius: 16px; background: var(--felt); color: var(--felt-ink); }
+.over > div { flex: 1 1 240px; min-width: 0; position: relative; }
+.over strong { font-family: var(--f-display); font-size: 1.45rem; font-weight: 800; display: block; letter-spacing: -.01em; }
+.over .ob { display: flex; gap: 8px; flex-wrap: wrap; position: relative; }
+.over button { background: var(--felt-ink); color: var(--felt); border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 700; }
+.over button.alt { background: transparent; color: var(--felt-ink); border: 1px solid currentColor; }
+.rain { position: absolute; inset: 0; pointer-events: none; }
+.rain i { position: absolute; top: -34px; width: 20px; height: 26px; border-radius: 4px; background: var(--tile); box-shadow: inset 0 -3px 0 var(--tile-edge); font: 800 11px/22px var(--f-display); font-style: normal; text-align: center; color: var(--ct); animation: drop 2.8s cubic-bezier(.3,.6,.4,1) forwards; opacity: 0; }
+@keyframes drop { 0% { transform: translateY(0) rotate(0); opacity: 0; } 12% { opacity: 1; } 100% { transform: translateY(190px) rotate(var(--r)); opacity: 0; } }
+
+/* sections */
+.section-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 6px 0 -6px; flex-wrap: wrap; }
+.section-h h2 { font-family: var(--f-display); font-weight: 800; font-size: 1.1rem; margin: 0; letter-spacing: -.01em; }
+.section-h span { color: var(--muted); font-size: .82rem; }
+.ledger { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 480px; }
+th, td { padding: 9px 8px; text-align: right; white-space: nowrap; }
+th { font-size: .74rem; font-weight: 600; color: var(--c, var(--muted)); border-bottom: 1px solid var(--line); max-width: 8em; overflow: hidden; text-overflow: ellipsis; }
+td { border-bottom: 1px solid var(--line); }
+tbody tr:last-child td { border-bottom: 0; }
+td.sum, th.sum { background: var(--cs); }
+td.sum { font-weight: 700; color: var(--c); }
+td.neg { color: var(--good); font-weight: 600; }
+td .fin { display: inline-block; font-size: .62rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--good); margin-right: 5px; vertical-align: 1px; }
+td.first, th.first { text-align: left; }
+.rowbtn { background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 3px 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+.rowbtn:hover { background: var(--surface-2); }
+.rowbtn svg { width: 12px; height: 12px; opacity: .6; }
+.kat { display: inline-block; font-size: .66rem; font-weight: 700; padding: 1px 6px; border-radius: 99px; background: var(--surface-2); color: var(--warn); margin-left: 4px; vertical-align: 1px; }
+tfoot td { font-weight: 700; border-top: 2px solid var(--line); border-bottom: 0; }
+.empty { padding: 28px 16px; text-align: center; color: var(--muted); }
+
+.chartbox { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); padding: 14px 14px 10px; display: grid; gap: 8px; }
+.chartbox svg { width: 100%; height: 150px; display: block; overflow: visible; }
+.chartbox polyline { fill: none; stroke: var(--c); stroke-width: 2.6; vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; }
+.chartbox .zero { stroke: var(--muted); stroke-dasharray: 4 5; vector-effect: non-scaling-stroke; stroke-width: 1; opacity: .7; }
+.chart-x { display: flex; justify-content: space-between; font-size: .74rem; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .82rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend b { color: var(--ink); font-weight: 700; }
+.legend i { width: 14px; height: 3px; border-radius: 2px; background: var(--c); }
+.legend .kz { background: repeating-linear-gradient(90deg, var(--muted) 0 4px, transparent 4px 8px); height: 2px; }
+
+.stats table { min-width: 420px; }
+.stats td.z { color: var(--muted); opacity: .5; }
+.stats td.top { color: var(--good); font-weight: 800; }
+.who { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.sw { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--c); }
+
+details.rules { background: var(--surface); border-radius: 14px; padding: 4px 14px; box-shadow: var(--shadow); }
+details.rules summary { cursor: pointer; padding: 10px 0; font-weight: 600; }
+.rules dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0 0 14px; font-size: .9rem; }
+.rules dt { font-family: var(--f-display); font-weight: 800; text-align: right; }
+.rules dd { margin: 0; color: var(--muted); }
+
+.archive { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.archive li { display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: space-between; padding: 10px 14px; border-radius: 12px; background: var(--surface); font-size: .88rem; }
+.archive .muted { color: var(--muted); }
+
+/* setup */
+.setup { border-radius: 28px; background: radial-gradient(130% 90% at 50% 20%, var(--table), var(--table-2)); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 10px 40px rgba(0,0,0,.3), var(--shadow); padding: 20px 18px 26px; display: grid; gap: 20px; color: var(--table-ink); min-height: 560px; align-content: start; }
+.setup-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.setup-top .brand p { color: var(--table-muted); }
+.setup-top .ghost { color: var(--table-ink); border-color: rgba(255,255,255,.25); }
+.setup-top .ghost:hover { background: rgba(255,255,255,.08); }
+.steps { list-style: none; margin: 0 0 0 auto; padding: 0; display: flex; gap: 6px; }
+.steps button { background: rgba(255,255,255,.08); border: 0; color: var(--table-muted); border-radius: 99px; padding: 5px 11px; font-size: .78rem; font-weight: 600; display: inline-flex; gap: 6px; align-items: center; }
+.steps button b { font-family: var(--f-display); }
+.steps button.on { background: var(--table-ink); color: var(--table-2); }
+.steps button.done { color: var(--table-ink); }
+.steps button[disabled] { cursor: default; opacity: .6; }
+.q { text-align: center; display: grid; gap: 4px; }
+.q h2 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: clamp(1.6rem, 5vw, 2.3rem); letter-spacing: -.025em; text-wrap: balance; }
+.q p { margin: 0; color: var(--table-muted); }
+.cards { display: flex; justify-content: center; gap: clamp(12px, 3vw, 28px); flex-wrap: wrap; padding: 6px 0 4px; }
+.pcard { position: relative; width: min(230px, calc(50% - 8px)); min-height: 320px; border: 0; border-radius: 16px; background: var(--tile); color: var(--card-ink); box-shadow: inset 0 -8px 0 var(--tile-edge), 0 14px 28px rgba(0,0,0,.35); padding: 16px 14px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; animation: deal .55s cubic-bezier(.2,.8,.25,1) backwards; animation-delay: calc(var(--d) * 130ms); transition: transform .2s, box-shadow .2s; transform: rotate(var(--rot)); }
+.pcard::before { content: ""; position: absolute; inset: 7px 7px 13px; border: 1.5px solid var(--tile-edge); border-radius: 11px; pointer-events: none; }
+.pcard:hover { transform: translateY(-6px) rotate(0); }
+.pcard.on { transform: translateY(-12px) rotate(0); box-shadow: inset 0 -8px 0 var(--tile-edge), 0 0 0 4px #F2D27A, 0 22px 36px rgba(0,0,0,.4); }
+.pcard .corner { position: absolute; top: 14px; left: 16px; font: 800 .9rem/1 var(--f-display); color: var(--ct); }
+.pcard .corner.b { top: auto; left: auto; bottom: 22px; right: 16px; transform: rotate(180deg); }
+.pcard .art { width: 100%; max-width: 150px; margin-top: 18px; }
+.pcard .art svg { width: 100%; height: auto; display: block; }
+.pcard .t { font: 800 1.5rem/1.1 var(--f-display); letter-spacing: -.02em; }
+.pcard .d { font-size: .84rem; color: var(--card-muted); line-height: 1.4; max-width: 24ch; }
+.pcard .check { position: absolute; top: -10px; right: -10px; width: 30px; height: 30px; border-radius: 50%; background: #F2D27A; color: #3A2A00; display: grid; place-items: center; font-weight: 800; opacity: 0; transform: scale(.5); transition: .2s; }
+.pcard.on .check { opacity: 1; transform: scale(1); }
+@keyframes deal { from { opacity: 0; transform: translate(var(--fx), -120px) rotate(-24deg) scale(.8); } to { opacity: 1; transform: rotate(var(--rot)); } }
+@media (max-width: 460px) { .pcard { min-height: 290px; padding-inline: 10px; } .pcard .t { font-size: 1.3rem; } .pcard .d { font-size: .8rem; } }
+
+.panel { background: var(--surface); color: var(--ink); border-radius: 20px; padding: 18px; display: grid; gap: 18px; box-shadow: 0 14px 30px rgba(0,0,0,.3); animation: up .3s ease-out both; max-width: 680px; width: 100%; margin: 0 auto; }
+.panel h3 { margin: 0 0 8px; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.picked { display: flex; flex-wrap: wrap; gap: 8px; }
+.picked button { border: 1px solid var(--line); background: var(--surface-2); border-radius: 99px; padding: 6px 12px; font-size: .85rem; font-weight: 600; }
+.picked button span { color: var(--muted); font-weight: 500; }
+
+/* sheet */
+.sheet-wrap { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
+.sheet-backdrop { position: absolute; inset: 0; background: var(--backdrop); }
+.sheet { position: relative; background: var(--bg); width: 100%; max-width: 640px; max-height: 94%; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; box-shadow: 0 -10px 40px rgba(0,0,0,.25); animation: up .22s ease-out; }
+@media (min-width: 700px) { .sheet-wrap { align-items: center; } .sheet { border-radius: 20px; max-height: 90%; } }
+@keyframes up { from { transform: translateY(24px); opacity: .6; } to { transform: none; opacity: 1; } }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px max(18px, env(safe-area-inset-right, 0px)) 10px max(18px, env(safe-area-inset-left, 0px)); }
+.sheet-head h2 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 1.35rem; letter-spacing: -.02em; }
+.sheet-head p { margin: 2px 0 0; font-size: .82rem; color: var(--muted); }
+.x { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); font-size: 1.2rem; line-height: 1; flex: none; }
+.sheet-body { overflow-y: auto; padding: 4px max(18px, env(safe-area-inset-right, 0px)) 16px max(18px, env(safe-area-inset-left, 0px)); display: grid; gap: 18px; overscroll-behavior: contain; }
+.sheet-body h3 { margin: 0 0 8px; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+.sheet-foot { border-top: 1px solid var(--line); padding: 12px max(18px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px)); display: grid; gap: 10px; background: var(--surface); border-radius: 0 0 20px 20px; }
+@media (max-width: 699px) { .sheet-foot { border-radius: 0; } }
+.hint { margin: 6px 0 0; color: var(--muted); font-size: .82rem; }
+
+.pick { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 520px) { .pick { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pick .none { grid-column: 1 / -1; } }
+.ptile { background: var(--tile); border: 0; border-radius: 10px; box-shadow: inset 0 -5px 0 var(--tile-edge), 0 1px 2px rgba(0,0,0,.12); padding: 10px 8px 14px; display: grid; gap: 2px; justify-items: center; font-family: var(--f-display); font-weight: 800; font-size: 1rem; min-width: 0; transition: transform .12s; color: var(--card-ink); }
+.ptile span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; color: var(--ct, var(--card-ink)); }
+.ptile small { font-family: var(--f-body); font-weight: 600; font-size: .68rem; color: var(--card-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.ptile.on { transform: translateY(-4px); box-shadow: inset 0 -5px 0 var(--tile-edge), 0 0 0 3px var(--felt), 0 6px 10px rgba(0,0,0,.15); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.tog { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 8px 14px; font-weight: 600; font-size: .9rem; display: inline-flex; gap: 6px; align-items: center; }
+.tog b { color: var(--warn); }
+.tog.on { background: var(--felt); color: var(--felt-ink); border-color: var(--felt); }
+.tog.on b { color: inherit; }
+.tog .sw { width: 9px; height: 9px; }
+.katbadge { font-family: var(--f-display); font-size: .95rem; color: var(--warn); letter-spacing: 0; text-transform: none; }
+
+.prows { display: grid; gap: 10px; }
+.prow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; padding: 12px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.prow.winner { border-color: var(--good); }
+.pname { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 700; }
+.pname .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.role { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); white-space: nowrap; }
+.prow.winner .role { color: var(--good); }
+.pscore { font-family: var(--f-display); font-weight: 800; font-size: 1.35rem; text-align: right; letter-spacing: -.02em; }
+.pscore.neg { color: var(--good); }
+.pctl { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 8px 12px; font-weight: 600; font-size: .88rem; }
+.seg button.on { background: var(--ink); color: var(--bg); }
+.sumin { width: 7.5rem; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 16px; font-weight: 600; }
+.sumin.bad { border-color: var(--warn); box-shadow: 0 0 0 2px color-mix(in srgb, var(--warn) 30%, transparent); }
+.step { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.step button { border: 0; background: transparent; width: 34px; height: 36px; font-size: 1.1rem; font-weight: 700; }
+.step span { padding: 0 8px; font-size: .85rem; font-weight: 600; white-space: nowrap; }
+.step.has span { color: var(--warn); }
+.note { color: var(--muted); font-size: .85rem; }
+
+.handsum { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px; font-size: .9rem; }
+.handsum span { color: var(--c); }
+.handsum b { font-family: var(--f-display); font-size: 1.15rem; }
+.err { color: var(--warn); font-size: .85rem; font-weight: 600; }
+.err:empty { display: none; }
+.foot-btns { display: flex; gap: 10px; }
+.foot-btns .primary { padding: 13px 18px; font-size: 1rem; }
+.danger { background: transparent; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; font-weight: 600; color: var(--warn); }
+.danger.armed { background: var(--warn); color: var(--surface); border-color: var(--warn); }
+
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 520px) { .fgrid { grid-template-columns: 1fr; } .fgrid.four { grid-template-columns: 1fr 1fr; } }
+.fcard { display: grid; gap: 8px; padding: 12px; border-radius: 14px; background: var(--surface); border: 1px solid color-mix(in srgb, var(--c, var(--line)) 45%, var(--line)); }
+.panel .fcard { background: var(--bg); }
+label.f { display: grid; gap: 4px; font-size: .78rem; font-weight: 600; color: var(--muted); }
+label.f .lt { display: inline-flex; gap: 6px; align-items: center; }
+label.f input, label.f select { padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 16px; font-weight: 500; color: var(--ink); width: 100%; min-width: 0; }
+.panel label.f input { background: var(--surface); }
+.checkrow { display: flex; gap: 10px; align-items: flex-start; font-size: .9rem; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.panel .checkrow { background: var(--bg); }
+.checkrow input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--felt); flex: none; }
+.checkrow small { display: block; color: var(--muted); }
+.row-btns { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 14px; padding: 10px 10px 10px 16px; border-radius: 14px; background: var(--ink); color: var(--bg); font-weight: 600; font-size: .9rem; box-shadow: 0 10px 30px rgba(0,0,0,.3); width: max-content; max-width: calc(100% - 32px); }
+.toast button { background: transparent; color: inherit; border: 1px solid currentColor; border-radius: 9px; padding: 6px 12px; font-weight: 700; white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+<div id="sheet"></div>
+<div id="toast"></div>
+
+<script>
+(function () {
+  const KEY = 'masa101.v2';
+  const B = 101;
+  const TARGETS = [5, 7, 9, 11, 13, 15, 20, 0];
+
+  const blankP = () => ({ opened: true, sum: '', cift: false, ceza: 0 });
+  function defaults() {
+    return { phase: 'setup', started: false, mode: { esli: true, katla: true }, teams: ['', ''], players: ['', '', '', ''], target: 11, esRule: true, firstDealer: 0, hands: [], series: [0, 0, 0, 0], archive: [] };
+  }
+  function load() {
+    try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.mode && Array.isArray(s.hands)) return Object.assign(defaults(), s); } catch (e) {}
+    return null;
+  }
+  let state = load() || defaults();
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+
+  const ui = { sheet: null, draft: null, editIndex: -1, confirmDel: false, confirmReset: false, bump: false, setup: null };
+  const app = document.getElementById('app');
+  const sheetEl = document.getElementById('sheet');
+  const toastEl = document.getElementById('toast');
+
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmt = (n) => { const s = Math.abs(n).toLocaleString('tr-TR'); return n < 0 ? '−' + s : s; };
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const partner = (i) => (i + 2) % 4;
+  const pname = (i, st = state) => st.players[i] || 'Oyuncu ' + (i + 1);
+  const tname = (t, st = state) => st.teams[t] || ['Kırmızılar', 'Maviler'][t];
+  const seatColor = (i) => (state.mode.esli ? i % 2 : i);
+  const hasWinner = (h) => typeof h.winner === 'number' && h.winner >= 0;
+  function sides() {
+    return state.mode.esli
+      ? [{ n: tname(0), seats: [0, 2], c: 0 }, { n: tname(1), seats: [1, 3], c: 1 }]
+      : [0, 1, 2, 3].map((i) => ({ n: pname(i), seats: [i], c: i }));
+  }
+  const modeLabel = (m) => (m.esli ? 'Eşli' : 'Tekli') + ' · ' + (m.katla ? 'Katlamalı' : 'Katlamasız');
+  const dealerOf = (k) => (state.firstDealer + k) % 4;
+
+  // ---------- scoring ----------
+  const katOf = (h) => (!state.mode.katla || !hasWinner(h)) ? 1 : (h.okey ? 2 : 1) * (h.elden ? 2 : 1);
+  function role(h, i) {
+    if (h.winner === i) return 'winner';
+    if (hasWinner(h) && state.mode.esli && state.esRule && i === partner(h.winner)) return 'partner';
+    return 'normal';
+  }
+  function calc(h) {
+    const kat = katOf(h);
+    return [0, 1, 2, 3].map((i) => {
+      const p = h.p[i]; const r = role(h, i); const c = state.mode.katla && p.cift ? 2 : 1; let v;
+      if (r === 'winner') v = -B * kat * c;
+      else if (r === 'partner') v = 0;
+      else v = (p.opened ? (Number(p.sum) || 0) : 2 * B) * kat * c;
+      return v + (p.ceza || 0) * B;
+    });
+  }
+  function totals() { const t = [0, 0, 0, 0]; state.hands.forEach((h) => calc(h).forEach((v, i) => { t[i] += v; })); return t; }
+  const sideSum = (arr, s) => s.seats.reduce((a, i) => a + arr[i], 0);
+  function leaderIdx(vals) { const m = Math.min(...vals); return vals.filter((v) => v === m).length > 1 ? -1 : vals.indexOf(m); }
+  function handWinnerSide(h) { const s = calc(h); return leaderIdx(sides().map((sd) => sideSum(s, sd))); }
+  function stats() {
+    const s = [0, 1, 2, 3].map(() => ({ fin: 0, okey: 0, elden: 0, cift: 0, acmadi: 0, ceza: 0 }));
+    state.hands.forEach((h) => {
+      if (hasWinner(h)) { s[h.winner].fin++; if (state.mode.katla && h.okey) s[h.winner].okey++; if (state.mode.katla && h.elden) s[h.winner].elden++; }
+      h.p.forEach((p, i) => {
+        if (state.mode.katla && p.cift) s[i].cift++;
+        if (h.winner !== -1 && role(h, i) === 'normal' && !p.opened) s[i].acmadi++;
+        s[i].ceza += p.ceza || 0;
+      });
+    });
+    return s;
+  }
+
+  // ---------- icons ----------
+  const ICON_DEAL = '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="4" width="6" height="9" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3" transform="rotate(-12 4.5 8.5)"/><rect x="8.5" y="3" width="6" height="9" rx="1.2" fill="currentColor" opacity=".8" transform="rotate(10 11.5 7.5)"/></svg>';
+  const PENCIL = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M11.7 1.3a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L5.4 13.6 1.5 14.5l.9-3.9z"/></svg>';
+  function tableArt(colors, linked) {
+    const seat = (x, y, c) => `<circle cx="${x}" cy="${y}" r="11" fill="${c}"/><circle cx="${x}" cy="${y}" r="11" fill="none" stroke="#fff" stroke-width="2.5" opacity=".8"/>`;
+    const pos = [[80, 14], [146, 60], [80, 106], [14, 60]];
+    const link = linked ? `<path d="M80 26 V94" stroke="${colors[0]}" stroke-width="2" stroke-dasharray="4 4" opacity=".55"/><path d="M26 60 H134" stroke="${colors[1]}" stroke-width="2" stroke-dasharray="4 4" opacity=".55"/>` : '';
+    return `<svg viewBox="0 0 160 120" aria-hidden="true"><rect x="28" y="26" width="104" height="68" rx="14" fill="#1A5A42"/><rect x="28" y="26" width="104" height="68" rx="14" fill="none" stroke="#0E3B2B" stroke-width="2"/>${link}${pos.map((p, k) => seat(p[0], p[1], colors[k])).join('')}</svg>`;
+  }
+  function tileArt(labels) {
+    const t = (x, y, r, txt, col) => `<g transform="translate(${x} ${y}) rotate(${r})"><rect x="-22" y="-30" width="44" height="60" rx="6" fill="#FFFDF6" stroke="#CFCBBB" stroke-width="1.5"/><rect x="-22" y="22" width="44" height="8" rx="3" fill="#D7D4C6"/><text x="0" y="6" text-anchor="middle" font-family="Bricolage Grotesque, Arial Narrow, sans-serif" font-weight="800" font-size="${txt.length > 2 ? 15 : 19}" fill="${col}">${txt}</text></g>`;
+    return `<svg viewBox="0 0 160 120" aria-hidden="true">${labels.map((l) => t(l[0], l[1], l[2], l[3], l[4])).join('')}</svg>`;
+  }
+  const R = '#C1232B', BL = '#1B58A3', K = '#1E2124', Y = '#B47400';
+
+  // ---------- setup ----------
+  function initSetup() {
+    ui.setup = { step: 0, esli: state.mode.esli, katla: state.mode.katla, picked: state.started ? 2 : -1, teams: state.teams.slice(), players: state.players.slice(), target: state.target, firstDealer: state.firstDealer, esRule: state.esRule };
+  }
+  function renderSetup() {
+    const S = ui.setup;
+    const steps = ['Oturuş', 'Puan', 'Masa'];
+    const stepBtns = steps.map((t, k) => `<li><button class="${S.step === k ? 'on' : ''} ${k <= S.picked ? 'done' : ''}" data-act="goStep" data-i="${k}" ${k <= S.picked + 1 && k !== S.step ? '' : 'disabled'}><b>${k + 1}</b>${t}</button></li>`).join('');
+    const card = (k, v, sel, d, title, desc, corner, cc, art, rot, fx) => `<button class="pcard ${sel ? 'on' : ''}" data-act="pick" data-k="${k}" data-v="${v}" aria-pressed="${sel}" style="--d:${d};--rot:${rot}deg;--fx:${fx}px">
+        <span class="corner ${cc}">${corner}</span><span class="check" aria-hidden="true">✓</span>
+        <span class="art">${art}</span><span class="t">${title}</span><span class="d">${desc}</span>
+        <span class="corner b ${cc}">${corner}</span></button>`;
+    let body = '';
+    if (S.step === 0) {
+      body = `<div class="q"><h2>Nasıl oynuyorsunuz?</h2><p>Bir kart seçin.</p></div>
+        <div class="cards">
+          ${card('esli', 1, S.picked >= 0 && S.esli, 0, 'Eşli', 'İkişer kişilik iki takım. Karşılıklı oturanlar eş, puanlar takımca toplanır.', '2v2', 'c0', tableArt([R, BL, R, BL], true), -4, 90)}
+          ${card('esli', 0, S.picked >= 0 && !S.esli, 1, 'Tekli', 'Herkes kendi adına oynar. Dört ayrı skor, en düşük puan kazanır.', '1·1·1·1', 'c1', tableArt([R, BL, K, Y], false), 4, -90)}
+        </div>`;
+    } else if (S.step === 1) {
+      body = `<div class="q"><h2>Puanlar katlansın mı?</h2><p>Bir kart seçin.</p></div>
+        <div class="cards">
+          ${card('katla', 1, S.picked >= 1 && S.katla, 0, 'Katlamalı', 'Okeyle ya da elden bitirince el ×2, ikisi birden ×4. Çift açanın puanı ayrıca ×2.', '×2', 'c0', tileArt([[48, 66, -14, '×2', R], [112, 66, 14, '×4', BL], [80, 58, 0, '101', K]]), -4, 90)}
+          ${card('katla', 0, S.picked >= 1 && !S.katla, 1, 'Katlamasız', 'Her el düz yazılır. Biten −101, açamayan 202, açan elindeki taşlar.', '101', 'c2', tileArt([[80, 60, 0, '101', K]]), 4, -90)}
+        </div>`;
+    } else {
+      const names = S.esli
+        ? `<div class="fgrid">${[0, 1].map((t) => `<div class="fcard c${t}">
+              <label class="f"><span class="lt"><i class="sw"></i>Takım adı</span><input id="su-t${t}" data-setup="teams" data-i="${t}" type="text" maxlength="18" autocomplete="off" placeholder="${['Kırmızılar', 'Maviler'][t]}" value="${esc(S.teams[t])}"></label>
+              ${(t === 0 ? [0, 2] : [1, 3]).map((i, k) => `<label class="f">${k + 1}. oyuncu<input id="su-p${i}" data-setup="players" data-i="${i}" type="text" maxlength="16" autocomplete="off" placeholder="Oyuncu ${i + 1}" value="${esc(S.players[i])}"></label>`).join('')}
+            </div>`).join('')}</div><p class="hint">Eşler karşılıklı oturur. Oturma sırası: ${esc(sname(0))}, ${esc(sname(1))}, ${esc(sname(2))}, ${esc(sname(3))}.</p>`
+        : `<div class="fgrid four">${[0, 1, 2, 3].map((i) => `<div class="fcard c${i}"><label class="f"><span class="lt"><i class="sw"></i>${i + 1}. oyuncu</span><input id="su-p${i}" data-setup="players" data-i="${i}" type="text" maxlength="16" autocomplete="off" placeholder="Oyuncu ${i + 1}" value="${esc(S.players[i])}"></label></div>`).join('')}</div><p class="hint">Masadaki oturma sırasıyla yazın.</p>`;
+      body = `<div class="q"><h2>Masayı kuralım</h2><p>İsimleri yazın, el sayısını seçin.</p></div>
+        <div class="panel">
+          <div class="picked"><button data-act="goStep" data-i="0">${S.esli ? 'Eşli' : 'Tekli'} <span>değiştir</span></button><button data-act="goStep" data-i="1">${S.katla ? 'Katlamalı' : 'Katlamasız'} <span>değiştir</span></button></div>
+          <section><h3>Oyuncular</h3>${names}</section>
+          <section><h3>Kaç el oynanacak?</h3><div class="chips" id="su-target">${TARGETS.map((x) => `<button class="tog ${S.target === x ? 'on' : ''}" data-act="suTarget" data-v="${x}">${x ? x + ' el' : 'Sınırsız'}</button>`).join('')}</div></section>
+          <section><h3>İlk eli kim dağıtıyor?</h3><div class="chips" id="su-dealer">${[0, 1, 2, 3].map((i) => `<button class="tog c${S.esli ? i % 2 : i} ${S.firstDealer === i ? 'on' : ''}" data-act="suDealer" data-v="${i}"><i class="sw"></i><span id="su-dn${i}">${esc(sname(i))}</span></button>`).join('')}</div><p class="hint">Sonraki ellerde dağıtan sırayla değişir.</p></section>
+          ${S.esli ? `<label class="checkrow"><input type="checkbox" id="su-es" ${S.esRule ? 'checked' : ''}><span>Bitirenin eşi el yazmaz<small>Kapatırsanız eşi de elinde kalanı yazar.</small></span></label>` : ''}
+          <button class="primary" data-act="startGame">Oyuna başla</button>
+          <p class="hint" style="margin:-8px 0 0;text-align:center">Skorlar bu cihazda saklanır.</p>
+        </div>`;
+    }
+    app.innerHTML = `<section class="setup" aria-label="Masa kurulumu">
+        <header class="setup-top"><div class="brand"><div class="mini-tile" aria-hidden="true">101</div><div><h1>101 Defteri</h1><p>Yeni masa</p></div></div>
+          <ol class="steps">${stepBtns}</ol>
+          ${state.started ? '<button class="ghost" data-act="setupCancel">Vazgeç</button>' : ''}</header>
+        ${body}
+      </section>`;
+  }
+  function sname(i) { return ui.setup.players[i] || 'Oyuncu ' + (i + 1); }
+  function startGame() {
+    const S = ui.setup;
+    const es = document.getElementById('su-es');
+    const next = { mode: { esli: S.esli, katla: S.katla }, teams: S.teams.map((t) => t.trim()), players: S.players.map((p) => p.trim()) };
+    const sameTable = JSON.stringify([state.mode, state.teams, state.players]) === JSON.stringify([next.mode, next.teams, next.players]);
+    if (state.hands.length) archiveCurrent();
+    Object.assign(state, next, { target: S.target, firstDealer: S.firstDealer, esRule: es ? es.checked : state.esRule, phase: 'play', started: true, hands: [] });
+    if (!sameTable) state.series = [0, 0, 0, 0];
+    save(); ui.setup = null; render();
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- main ----------
+  function render() {
+    if (state.phase === 'setup') { if (!ui.setup) initSetup(); renderSetup(); return; }
+    const tot = totals();
+    const sd = sides();
+    const T = sd.map((s) => sideSum(tot, s));
+    const n = state.hands.length;
+    const done = state.target > 0 && n >= state.target;
+    const lead = leaderIdx(T);
+    const best = Math.min(...T);
+    const order = T.map((v, k) => k).sort((a, b) => T[a] - T[b]);
+    const esli = state.mode.esli;
+    const st = stats();
+
+    const dotCount = state.target > 0 ? state.target : Math.max(n + 1, 4);
+    const dots = Array.from({ length: dotCount }, (_, k) => {
+      if (k === n && !done) return '<i class="next"></i>';
+      if (k >= n) return '<i></i>';
+      const w = handWinnerSide(state.hands[k]);
+      return w === -1 ? '<i class="wx"></i>' : `<i class="w c${sd[w].c}"></i>`;
+    }).join('');
+
+    const ser = state.series.some((x) => x > 0)
+      ? `<span class="series" title="Kazanılan oyunlar">${sd.map((s, k) => `<span class="c${s.c}">${state.series[k]}</span>`).join('<em>–</em>')}</span>` : '';
+
+    const card = (s, k) => `
+      <article class="team c${s.c} ${lead === k ? 'lead' : ''}" aria-label="${esc(s.n)}">
+        <div class="team-head"><h2>${esc(s.n)}</h2>${lead === k ? '<span class="lead-chip">Önde</span>' : (n && T[k] > best ? `<span class="behind">+${fmt(T[k] - best)}</span>` : '')}</div>
+        <div class="bigtile ${ui.bump ? 'bump' : ''}"><span class="num">${fmt(T[k])}</span><i class="dot"></i></div>
+        ${esli
+          ? `<ul class="players">${s.seats.map((i) => `<li><span>${esc(pname(i))}</span><b class="num">${fmt(tot[i])}</b></li>`).join('')}</ul>`
+          : `<div class="meta"><span><b>${order.indexOf(k) + 1}.</b> sıra</span><span><b>${st[k].fin}</b> bitirme</span></div>`}
+      </article>`;
+
+    const nextDealer = pname(dealerOf(n));
+    const round = `<div class="round">
+        <span class="lbl">El</span>
+        <span class="cnt num">${n}<small> / ${state.target || '∞'}</small></span>
+        <div class="dots" aria-hidden="true">${dots}</div>
+        <div class="diff">${lead === -1 ? (n ? 'Eşitlik var' : 'Henüz el yok') : esli ? `Fark <b class="num">${fmt(Math.abs(T[0] - T[1]))}</b>` : `Lider <b>${esc(sd[lead].n)}</b>`}</div>
+        ${done ? '' : `<div class="dealer">${ICON_DEAL}Dağıtan <b>${esc(nextDealer)}</b></div>`}
+      </div>`;
+    const board = esli ? card(sd[0], 0) + round + card(sd[1], 1) : round + sd.map(card).join('');
+
+    // ledger
+    const head = `<th class="first">El</th>` + sd.map((s) => s.seats.map((i) => `<th class="c${s.c}" title="${esc(pname(i))}">${esc(pname(i))}</th>`).join('') + (esli ? `<th class="sum c${s.c}">${esc(s.n)}</th>` : '')).join('');
+    const rows = state.hands.map((h, k) => {
+      const s = calc(h); const kat = katOf(h);
+      const cell = (i) => `<td class="${s[i] < 0 ? 'neg' : ''}">${h.winner === i ? '<span class="fin">bitti</span>' : ''}${fmt(s[i])}</td>`;
+      return `<tr><td class="first"><button class="rowbtn" data-act="edit" data-i="${k}" aria-label="${k + 1}. eli düzenle">${k + 1}${PENCIL}</button>${kat > 1 ? `<span class="kat">×${kat}</span>` : ''}${h.winner === null ? '<span class="kat">taş bitti</span>' : ''}</td>` +
+        sd.map((x) => x.seats.map(cell).join('') + (esli ? `<td class="sum c${x.c}">${fmt(sideSum(s, x))}</td>` : '')).join('') + '</tr>';
+    }).join('');
+    const foot = `<tfoot><tr><td class="first">Toplam</td>${sd.map((x, k) => x.seats.map((i) => `<td class="c${x.c}">${fmt(tot[i])}</td>`).join('') + (esli ? `<td class="sum c${x.c}">${fmt(T[k])}</td>` : '')).join('')}</tr></tfoot>`;
+
+    // game over
+    let overHtml = '';
+    if (done) {
+      const rain = Array.from({ length: 16 }, (_, k) => `<i class="c${k % 4}" style="left:${(k * 6.3 + Math.random() * 4).toFixed(1)}%;animation-delay:${(Math.random() * 1.2).toFixed(2)}s;--r:${Math.round(Math.random() * 120 - 60)}deg">${1 + Math.floor(Math.random() * 13)}</i>`).join('');
+      overHtml = `<div class="over" role="status"><div class="rain" aria-hidden="true">${rain}</div><div><strong>${lead === -1 ? 'Berabere bitti' : esc(sd[lead].n) + ' kazandı'}</strong>${lead === -1 ? 'Önde olanlar eşit puanda.' : (esli ? fmt(Math.abs(T[0] - T[1])) + ' puan farkla, ' : fmt(best) + ' puanla, ') + n + ' elin sonunda.'}</div>
+        <div class="ob"><button data-act="rematch">Rövanş</button><button class="alt" data-act="toSetup">Masayı değiştir</button></div></div>`;
+    }
+
+    // chart
+    let chart = '';
+    if (n >= 2) {
+      const W = 600, H = 150, P = 8;
+      const cum = sd.map(() => [0]);
+      state.hands.forEach((h) => { const s = calc(h); sd.forEach((x, k) => cum[k].push(cum[k][cum[k].length - 1] + sideSum(s, x))); });
+      const all = cum.flat(); let mn = Math.min(0, ...all), mx = Math.max(0, ...all); if (mx === mn) mx = mn + 1;
+      const X = (k) => (k / n) * W, Y = (v) => P + ((mx - v) / (mx - mn)) * (H - 2 * P);
+      chart = `<div class="section-h"><h2>Puan seyri</h2><span>Çizgi ne kadar aşağıdaysa o kadar iyi</span></div>
+        <div class="chartbox">
+          <div class="legend">${sd.map((x, k) => `<span class="c${x.c}"><i></i>${esc(x.n)} <b class="num">${fmt(T[k])}</b></span>`).join('')}<span><i class="kz"></i>sıfır</span></div>
+          <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Ele göre toplam puanlar"><line class="zero" x1="0" x2="${W}" y1="${Y(0)}" y2="${Y(0)}"/>${cum.map((c, k) => `<polyline class="c${sd[k].c}" points="${c.map((v, j) => X(j).toFixed(1) + ',' + Y(v).toFixed(1)).join(' ')}"/>`).join('')}</svg>
+          <div class="chart-x"><span>Başlangıç</span><span>${n}. el</span></div>
+        </div>`;
+    }
+
+    // stats
+    let statsHtml = '';
+    if (n) {
+      const cols = [['fin', 'Bitirdi']].concat(state.mode.katla ? [['okey', 'Okeyle'], ['elden', 'Elden'], ['cift', 'Çift açtı']] : []).concat([['acmadi', 'Açamadı'], ['ceza', 'Ceza']]);
+      const maxFin = Math.max(...st.map((x) => x.fin));
+      const seats = sd.flatMap((s) => s.seats);
+      statsHtml = `<div class="section-h"><h2>Oyuncular</h2><span>Bu oyunun sayıları</span></div>
+        <div class="ledger stats"><table><thead><tr><th class="first">Oyuncu</th>${cols.map((c) => `<th>${c[1]}</th>`).join('')}</tr></thead><tbody>
+        ${seats.map((i) => `<tr><td class="first"><span class="who c${seatColor(i)}"><i class="sw"></i>${esc(pname(i))}</span></td>${cols.map((c) => `<td class="${st[i][c[0]] === 0 ? 'z' : (c[0] === 'fin' && st[i].fin === maxFin ? 'top' : '')}">${st[i][c[0]]}</td>`).join('')}</tr>`).join('')}
+        </tbody></table></div>`;
+    }
+
+    const rules = `<details class="rules"><summary>Puanlama kuralları · ${modeLabel(state.mode)}</summary><dl>
+        <dt class="num">−101</dt><dd>Eli bitiren oyuncu.</dd>
+        <dt class="num">202</dt><dd>El açamayan oyuncu.</dd>
+        <dt>Toplam</dt><dd>Açan oyuncu elinde kalan taşların toplamını yazar.</dd>
+        ${esli ? `<dt>0</dt><dd>Bitirenin eşi el yazmaz${state.esRule ? '' : ' (bu masada kapalı)'}.</dd>` : ''}
+        ${state.mode.katla ? `<dt>×2</dt><dd>Okey atarak ya da elden bitirince bütün el katlanır, ikisi birden ×4.</dd><dt>×2</dt><dd>Çift açan oyuncunun kendi puanı ayrıca katlanır. Bitiren çift açtıysa −202 yazar.</dd>` : '<dt>Düz</dt><dd>Katlama yok, her el olduğu gibi yazılır.</dd>'}
+        <dt class="num">+101</dt><dd>İşlek taş atma, hatalı açma gibi her ceza. Katlanmaz.</dd>
+        <dt>Taş bitti</dt><dd>Kimse bitiremezse herkes elini yazar.</dd>
+      </dl><p class="hint" style="margin:0 0 14px">En düşük puan kazanır.</p></details>`;
+
+    app.innerHTML = `
+      <header class="top">
+        <div class="brand"><div class="mini-tile" aria-hidden="true">101</div><div><h1>${esli ? 'Eşli' : 'Tekli'} 101</h1><p>${state.mode.katla ? 'Katlamalı' : 'Katlamasız'} · ${state.target ? state.target + ' el' : 'sınırsız'}</p></div></div>
+        <span class="sp"></span>${ser}
+        <button class="ghost" data-act="settings">Ayarlar</button>
+      </header>
+      <section class="board ${esli ? '' : 'solo'}" aria-label="Skor">${board}</section>
+      ${overHtml}
+      ${done ? '' : `<div class="cta"><button class="primary" data-act="add"><span class="plus">+</span>${n + 1}. eli yaz</button></div>`}
+      <div class="section-h"><h2>Eller</h2>${n ? '<span>Düzeltmek için el numarasına dokunun</span>' : ''}</div>
+      <div class="ledger">${n ? `<table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody>${foot}</table>` : `<div class="empty">Kartları ${esc(nextDealer)} dağıtıyor. El bitince “1. eli yaz” ile puanları girin.</div>`}</div>
+      ${chart}
+      ${statsHtml}
+      ${rules}
+      ${state.archive.length ? `<div class="section-h"><h2>Önceki oyunlar</h2></div><ul class="archive">${state.archive.slice().reverse().map((g) => `<li><span><b>${esc(g.result)}</b> <span class="muted">· ${esc(g.date)} · ${esc(g.mode)} · ${g.hands} el</span></span><span class="num">${esc(g.line)}</span></li>`).join('')}</ul>` : ''}
+    `;
+    ui.bump = false;
+  }
+
+  // ---------- toast / undo ----------
+  let toastTimer = null, undoFn = null;
+  function showToast(text, fn) {
+    undoFn = fn;
+    toastEl.innerHTML = `<div class="toast" role="status"><span>${esc(text)}</span>${fn ? '<button data-act="undo">Geri al</button>' : ''}</div>`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 6000);
+  }
+  function hideToast() { toastEl.innerHTML = ''; undoFn = null; clearTimeout(toastTimer); }
+
+  // ---------- hand entry ----------
+  function openEntry(idx) {
+    ui.editIndex = idx;
+    ui.draft = idx >= 0 ? clone(state.hands[idx]) : { winner: -1, okey: false, elden: false, p: [blankP(), blankP(), blankP(), blankP()] };
+    ui.confirmDel = false; ui.sheet = 'entry';
+    hideToast(); renderSheet();
+  }
+  function closeSheet() { ui.sheet = null; sheetEl.innerHTML = ''; document.documentElement.style.overflow = ''; }
+  function renderSheet() {
+    const prev = sheetEl.querySelector('.sheet-body'); const st = prev ? prev.scrollTop : 0;
+    document.documentElement.style.overflow = 'hidden';
+    sheetEl.innerHTML = ui.sheet === 'entry' ? entryHtml() : settingsHtml();
+    const body = sheetEl.querySelector('.sheet-body'); if (body) body.scrollTop = st;
+    if (ui.sheet === 'entry') updatePreview();
+  }
+
+  function entryHtml() {
+    const d = ui.draft; const chosen = d.winner !== -1; const kat = katOf(d);
+    const k = ui.editIndex >= 0 ? ui.editIndex : state.hands.length;
+    const tot = totals();
+    const sub = (i) => state.mode.esli ? tname(i % 2) : fmt(tot[i]) + ' puan';
+    const pick = [0, 1, 2, 3].map((i) => `<button class="ptile c${seatColor(i)} ${d.winner === i ? 'on' : ''}" data-act="win" data-i="${i}" aria-pressed="${d.winner === i}"><span>${esc(pname(i))}</span><small>${esc(sub(i))}</small></button>`).join('') +
+      `<button class="ptile none ${d.winner === null ? 'on' : ''}" data-act="win" data-i="none" aria-pressed="${d.winner === null}"><span>Kimse</span><small>Taşlar bitti</small></button>`;
+
+    let order = [0, 1, 2, 3];
+    if (hasWinner(d)) order = state.mode.esli
+      ? [d.winner, partner(d.winner), ...[0, 1, 2, 3].filter((i) => i % 2 !== d.winner % 2)]
+      : [0, 1, 2, 3].map((j) => (d.winner + j) % 4);
+
+    const rows = order.map((i) => {
+      const p = d.p[i]; const r = role(d, i);
+      const step = `<span class="step ${p.ceza ? 'has' : ''}"><button data-act="ceza-" data-i="${i}" aria-label="Cezayı azalt">−</button><span>Ceza ${p.ceza ? p.ceza + ' × 101' : 'yok'}</span><button data-act="ceza+" data-i="${i}" aria-label="Ceza ekle">+</button></span>`;
+      const cift = state.mode.katla ? `<button class="tog ${p.cift ? 'on' : ''}" data-act="cift" data-i="${i}" aria-pressed="${p.cift}">Çift açtı <b>×2</b></button>` : '';
+      let ctl;
+      if (r === 'winner') ctl = cift + step;
+      else if (r === 'partner') ctl = `<span class="note">Eşi bitirdi, el yazılmaz.</span>${step}`;
+      else ctl = `<span class="seg" role="group" aria-label="Açma durumu"><button class="${p.opened ? 'on' : ''}" data-act="open" data-v="1" data-i="${i}">Açtı</button><button class="${!p.opened ? 'on' : ''}" data-act="open" data-v="0" data-i="${i}">Açmadı</button></span>` +
+        (p.opened ? `<input class="sumin" id="sum-${i}" data-sum="${i}" type="number" inputmode="numeric" min="0" max="999" placeholder="El toplamı" value="${p.sum === '' ? '' : esc(p.sum)}" aria-label="${esc(pname(i))} el toplamı">` : `<span class="note">${2 * B}${kat > 1 ? ' × ' + kat : ''} yazar</span>`) + cift + step;
+      const label = r === 'winner' ? 'bitirdi' : r === 'partner' ? 'eşi' : '';
+      return `<div class="prow c${seatColor(i)} ${r === 'winner' ? 'winner' : ''}">
+        <div class="pname"><i class="sw"></i><span class="nm">${esc(pname(i))}</span>${label ? `<span class="role">${label}</span>` : ''}</div>
+        <output class="pscore num" id="ps-${i}"></output><div class="pctl">${ctl}</div></div>`;
+    }).join('');
+
+    return `<div class="sheet-wrap"><div class="sheet-backdrop" data-act="close"></div>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+        <header class="sheet-head"><div><h2 id="sheet-title">${ui.editIndex >= 0 ? `${k + 1}. eli düzenle` : `${k + 1}. el`}</h2><p>Dağıtan: ${esc(pname(dealerOf(k)))}</p></div><button class="x" data-act="close" aria-label="Kapat">×</button></header>
+        <div class="sheet-body">
+          <section><h3>Kim bitirdi?</h3><div class="pick">${pick}</div></section>
+          ${hasWinner(d) && state.mode.katla ? `<section><h3>Katlar <span class="katbadge">×${kat}</span></h3><div class="chips">
+              <button class="tog ${d.okey ? 'on' : ''}" data-act="okey" aria-pressed="${d.okey}">Okey atarak bitti <b>×2</b></button>
+              <button class="tog ${d.elden ? 'on' : ''}" data-act="elden" aria-pressed="${d.elden}">Elden bitti <b>×2</b></button>
+            </div><p class="hint">Katlar çarpılır, ikisi birden ×4. Cezalar katlanmaz.</p></section>` : ''}
+          ${chosen ? `<section><h3>Oyuncular</h3><div class="prows">${rows}</div></section>` : '<p class="hint">Önce eli bitiren oyuncuyu seçin. Taşlar bittiyse “Kimse”.</p>'}
+        </div>
+        <footer class="sheet-foot">
+          ${chosen ? `<div class="handsum">${sides().map((s, j) => `<span class="c${s.c}">${esc(s.n)} <b class="num" id="hs${j}"></b></span>`).join('')}</div>` : ''}
+          <div class="err" id="err" role="alert"></div>
+          <div class="foot-btns">
+            ${ui.editIndex >= 0 ? `<button class="danger ${ui.confirmDel ? 'armed' : ''}" data-act="del">${ui.confirmDel ? 'Eminim, sil' : 'Eli sil'}</button>` : ''}
+            <button class="primary" data-act="saveHand" ${chosen ? '' : 'disabled'}>${ui.editIndex >= 0 ? 'Değişiklikleri kaydet' : 'Eli kaydet'}</button>
+          </div>
+        </footer>
+      </div></div>`;
+  }
+  function updatePreview() {
+    const d = ui.draft; if (!d || d.winner === -1) return;
+    const s = calc(d);
+    s.forEach((v, i) => { const o = document.getElementById('ps-' + i); if (o) { o.textContent = fmt(v); o.classList.toggle('neg', v < 0); } });
+    sides().forEach((x, j) => { const el = document.getElementById('hs' + j); if (el) el.textContent = fmt(sideSum(s, x)); });
+  }
+  function saveHand() {
+    const d = ui.draft; const err = document.getElementById('err');
+    if (d.winner === -1) { err.textContent = 'Eli bitiren oyuncuyu seçin.'; return; }
+    for (const i of [0, 1, 2, 3]) {
+      if (role(d, i) !== 'normal') continue;
+      const p = d.p[i];
+      if (p.opened && (p.sum === '' || isNaN(Number(p.sum)))) {
+        err.textContent = `${pname(i)} için el toplamını yazın.`;
+        const inp = document.getElementById('sum-' + i); if (inp) { inp.classList.add('bad'); inp.focus(); }
+        return;
+      }
+      if (p.opened && Number(p.sum) < 0) { err.textContent = 'El toplamı eksi olamaz.'; return; }
+    }
+    d.p.forEach((p) => { if (p.sum !== '') p.sum = Math.round(Number(p.sum)); });
+    const idx = ui.editIndex;
+    if (idx >= 0) { const prev = state.hands[idx]; state.hands[idx] = d; showToast(`${idx + 1}. el güncellendi`, () => { state.hands[idx] = prev; }); }
+    else { state.hands.push(d); showToast(`${state.hands.length}. el kaydedildi`, () => { state.hands.pop(); }); }
+    save(); closeSheet(); ui.bump = true; render();
+  }
+
+  // ---------- settings ----------
+  function openSettings() { ui.sheet = 'settings'; ui.confirmReset = false; hideToast(); renderSheet(); }
+  function settingsHtml() {
+    const esli = state.mode.esli;
+    const pf = (i, label) => `<label class="f">${label}<input id="set-p${i}" type="text" maxlength="16" autocomplete="off" placeholder="Oyuncu ${i + 1}" value="${esc(state.players[i])}"></label>`;
+    const names = esli
+      ? `<div class="fgrid">${[0, 1].map((t) => `<div class="fcard c${t}"><label class="f">Takım adı<input id="set-t${t}" type="text" maxlength="18" autocomplete="off" placeholder="${['Kırmızılar', 'Maviler'][t]}" value="${esc(state.teams[t])}"></label>${(t === 0 ? [0, 2] : [1, 3]).map((i, k) => pf(i, (k + 1) + '. oyuncu')).join('')}</div>`).join('')}</div>`
+      : `<div class="fgrid four">${[0, 1, 2, 3].map((i) => `<div class="fcard c${i}">${pf(i, (i + 1) + '. oyuncu')}</div>`).join('')}</div>`;
+    return `<div class="sheet-wrap"><div class="sheet-backdrop" data-act="close"></div>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+        <header class="sheet-head"><div><h2 id="sheet-title">Ayarlar</h2><p>${modeLabel(state.mode)}</p></div><button class="x" data-act="close" aria-label="Kapat">×</button></header>
+        <div class="sheet-body">
+          <section><h3>İsimler</h3>${names}</section>
+          <section><h3>Oyun</h3><div style="display:grid;gap:10px">
+            <label class="f">Kaç el oynanacak?<select id="set-target">${TARGETS.map((x) => `<option value="${x}" ${state.target === x ? 'selected' : ''}>${x ? x + ' el' : 'Sınırsız'}</option>`).join('')}</select></label>
+            <label class="f">İlk eli dağıtan<select id="set-dealer">${[0, 1, 2, 3].map((i) => `<option value="${i}" ${state.firstDealer === i ? 'selected' : ''}>${esc(pname(i))}</option>`).join('')}</select></label>
+            ${esli ? `<label class="checkrow"><input type="checkbox" id="set-es" ${state.esRule ? 'checked' : ''}><span>Bitirenin eşi el yazmaz<small>Kapalıysa eşi de elinde kalanı yazar.</small></span></label>` : ''}
+          </div></section>
+          <section><h3>Masa</h3><div class="row-btns">
+            <button class="ghost" data-act="rematch">Yeni oyun, aynı masa</button>
+            <button class="ghost" data-act="toSetup">Eşli/tekli ya da katlamayı değiştir</button>
+            <button class="danger ${ui.confirmReset ? 'armed' : ''}" data-act="reset">${ui.confirmReset ? 'Eminim, her şeyi sil' : 'Her şeyi sıfırla'}</button>
+          </div><p class="hint">Yeni oyun elleri temizler, oynanan oyun “Önceki oyunlar”a eklenir. Sıfırlama seri skorunu ve geçmişi de siler.</p></section>
+        </div>
+        <footer class="sheet-foot"><div class="foot-btns"><button class="primary" data-act="saveSettings">Kaydet</button></div></footer>
+      </div></div>`;
+  }
+  function saveSettings() {
+    const g = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : null; };
+    if (state.mode.esli) state.teams = [0, 1].map((t) => g('set-t' + t) ?? state.teams[t]);
+    state.players = [0, 1, 2, 3].map((i) => g('set-p' + i) ?? state.players[i]);
+    state.target = Number(g('set-target'));
+    state.firstDealer = Number(g('set-dealer'));
+    const es = document.getElementById('set-es'); if (es) state.esRule = es.checked;
+    save(); closeSheet(); render();
+  }
+
+  function archiveCurrent() {
+    if (!state.hands.length) return;
+    const tot = totals(); const sd = sides(); const T = sd.map((s) => sideSum(tot, s));
+    const w = leaderIdx(T);
+    const finished = state.target > 0 && state.hands.length >= state.target;
+    if (finished && w !== -1) state.series[w]++;
+    state.archive.push({
+      date: new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }),
+      mode: modeLabel(state.mode), hands: state.hands.length,
+      result: w === -1 ? 'Berabere' : sd[w].n + (finished ? ' kazandı' : ' öndeydi'),
+      line: sd.map((s, k) => s.n + ' ' + fmt(T[k])).join(' · ')
+    });
+    if (state.archive.length > 40) state.archive.shift();
+    state.firstDealer = dealerOf(state.hands.length);
+    state.hands = [];
+  }
+
+  // ---------- events ----------
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    const act = b.dataset.act;
+    const i = b.dataset.i !== undefined && b.dataset.i !== 'none' ? Number(b.dataset.i) : null;
+    const d = ui.draft;
+    wake();
+    switch (act) {
+      // setup
+      case 'pick': {
+        const S = ui.setup; const step = S.step; const v = b.dataset.v === '1';
+        S[b.dataset.k] = v; S.picked = Math.max(S.picked, step);
+        app.querySelectorAll('.pcard').forEach((c) => { const on = c === b; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on); });
+        setTimeout(() => { if (ui.setup === S && S.step === step) { S.step = step + 1; renderSetup(); } }, 380);
+        break;
+      }
+      case 'goStep': ui.setup.step = i; renderSetup(); break;
+      case 'suTarget': ui.setup.target = Number(b.dataset.v); document.querySelectorAll('#su-target .tog').forEach((x) => x.classList.toggle('on', x === b)); break;
+      case 'suDealer': ui.setup.firstDealer = Number(b.dataset.v); document.querySelectorAll('#su-dealer .tog').forEach((x) => x.classList.toggle('on', x === b)); break;
+      case 'startGame': startGame(); break;
+      case 'setupCancel': state.phase = 'play'; ui.setup = null; save(); render(); break;
+      case 'toSetup': closeSheet(); state.phase = 'setup'; initSetup(); ui.setup.step = 0; save(); render(); window.scrollTo(0, 0); break;
+      case 'rematch': archiveCurrent(); save(); closeSheet(); render(); window.scrollTo(0, 0); break;
+      // entry
+      case 'add': openEntry(-1); break;
+      case 'edit': openEntry(i); break;
+      case 'close': closeSheet(); break;
+      case 'win': d.winner = b.dataset.i === 'none' ? null : i; if (!hasWinner(d)) { d.okey = d.elden = false; } renderSheet(); break;
+      case 'okey': d.okey = !d.okey; renderSheet(); break;
+      case 'elden': d.elden = !d.elden; renderSheet(); break;
+      case 'open': d.p[i].opened = b.dataset.v === '1'; renderSheet(); if (d.p[i].opened) { const inp = document.getElementById('sum-' + i); if (inp) inp.focus(); } break;
+      case 'cift': d.p[i].cift = !d.p[i].cift; renderSheet(); break;
+      case 'ceza+': d.p[i].ceza = Math.min(9, (d.p[i].ceza || 0) + 1); renderSheet(); break;
+      case 'ceza-': d.p[i].ceza = Math.max(0, (d.p[i].ceza || 0) - 1); renderSheet(); break;
+      case 'saveHand': saveHand(); break;
+      case 'del':
+        if (!ui.confirmDel) { ui.confirmDel = true; renderSheet(); }
+        else { const idx = ui.editIndex; const removed = state.hands.splice(idx, 1)[0]; save(); closeSheet(); render(); showToast(`${idx + 1}. el silindi`, () => { state.hands.splice(idx, 0, removed); }); }
+        break;
+      case 'undo': if (undoFn) { undoFn(); save(); hideToast(); render(); } break;
+      // settings
+      case 'settings': openSettings(); break;
+      case 'saveSettings': saveSettings(); break;
+      case 'reset':
+        if (!ui.confirmReset) { ui.confirmReset = true; renderSheet(); }
+        else { state = defaults(); save(); closeSheet(); ui.setup = null; render(); window.scrollTo(0, 0); }
+        break;
+    }
+  });
+  document.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.dataset && t.dataset.setup && ui.setup) {
+      ui.setup[t.dataset.setup][Number(t.dataset.i)] = t.value;
+      if (t.dataset.setup === 'players') { const el = document.getElementById('su-dn' + t.dataset.i); if (el) el.textContent = sname(Number(t.dataset.i)); }
+      return;
+    }
+    if (!t.dataset || t.dataset.sum === undefined || !ui.draft) return;
+    ui.draft.p[Number(t.dataset.sum)].sum = t.value;
+    t.classList.remove('bad'); const err = document.getElementById('err'); if (err) err.textContent = '';
+    updatePreview();
+  });
+  document.addEventListener('keydown', (e) => {
+    const t = e.target;
+    if (e.key === 'Escape' && ui.sheet) { closeSheet(); return; }
+    if (e.key !== 'Enter' || !t.classList) return;
+    if (t.classList.contains('sumin')) {
+      const ins = [...sheetEl.querySelectorAll('.sumin')]; const k = ins.indexOf(t);
+      if (k >= 0 && k < ins.length - 1) ins[k + 1].focus(); else saveHand();
+    } else if (t.dataset && t.dataset.setup) {
+      const ins = [...app.querySelectorAll('[data-setup]')]; const k = ins.indexOf(t);
+      if (k >= 0 && k < ins.length - 1) ins[k + 1].focus(); else t.blur();
+    }
+  });
+
+  let lock = null;
+  async function wake() {
+    if (lock || !('wakeLock' in navigator)) return;
+    try { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); } catch (e) { lock = null; }
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
