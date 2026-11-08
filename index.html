@@ -200,6 +200,19 @@ details.rules summary { cursor: pointer; padding: 10px 0; font-weight: 600; }
 .rules dt { font-family: var(--f-display); font-weight: 800; text-align: right; }
 .rules dd { margin: 0; color: var(--muted); }
 
+.memories { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.memcard { position: relative; text-align: left; border: 0; background: var(--surface); border-radius: 16px; padding: 14px 54px 14px 14px; box-shadow: var(--shadow); display: grid; gap: 5px; align-content: start; min-width: 0; transition: transform .15s; }
+.memcard:hover { transform: translateY(-2px); }
+.memcard .md { font-size: .72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.memcard .mw { font: 800 1.2rem/1.15 var(--f-display); letter-spacing: -.01em; color: var(--c, var(--ink)); text-wrap: balance; }
+.memcard .ml { font-size: .85rem; color: var(--muted); }
+.memcard .mn { font-size: .86rem; font-style: italic; border-left: 2px solid var(--c, var(--line)); padding-left: 8px; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.memcard .mt { position: absolute; top: 12px; right: 12px; width: 30px; height: 38px; border-radius: 5px; background: var(--tile); box-shadow: inset 0 -4px 0 var(--tile-edge), 0 1px 2px rgba(0,0,0,.15); display: grid; place-items: center; padding-bottom: 4px; font: 800 .95rem/1 var(--f-display); color: var(--ct, var(--tile-black)); }
+.filebtn { cursor: pointer; display: inline-flex; align-items: center; }
+.ghost[disabled] { opacity: .5; cursor: not-allowed; }
+.sheet.wide { max-width: 920px; }
+.sheet.wide .board { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 10px 34px rgba(0,0,0,.28); }
+.memo-note textarea { width: 100%; min-height: 72px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 10px 12px; font: 500 16px/1.4 var(--f-body); resize: vertical; }
 .archive { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .archive li { display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: space-between; padding: 10px 14px; border-radius: 12px; background: var(--surface); font-size: .88rem; }
 .archive .muted { color: var(--muted); }
@@ -246,7 +259,7 @@ details.rules summary { cursor: pointer; padding: 10px 0; font-weight: 600; }
 .sheet-backdrop { position: absolute; inset: 0; background: var(--backdrop); }
 .sheet { position: relative; background: var(--bg); width: 100%; max-width: 640px; max-height: 94%; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; box-shadow: 0 -10px 40px rgba(0,0,0,.25); animation: up .22s ease-out; }
 @media (min-width: 700px) { .sheet-wrap { align-items: center; } .sheet { border-radius: 20px; max-height: 90%; } }
-@keyframes up { from { transform: translateY(24px); opacity: .6; } to { transform: none; opacity: 1; } }
+@keyframes up { from { transform: translateY(24px); } to { transform: none; } }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px max(18px, env(safe-area-inset-right, 0px)) 10px max(18px, env(safe-area-inset-left, 0px)); }
 .sheet-head h2 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 1.35rem; letter-spacing: -.02em; }
 .sheet-head p { margin: 2px 0 0; font-size: .82rem; color: var(--muted); }
@@ -344,9 +357,12 @@ label.f input, label.f select { padding: 9px 10px; border-radius: 10px; border: 
     return null;
   }
   let state = load() || defaults();
+  state.archive.forEach((m, k) => { if (!m.id) m.id = 'eski' + k; if (m.note === undefined) m.note = ''; });
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+  // Runs fn as if `g` (an archived game) were the live table, so every scorer and renderer can be reused for memories.
+  function asGame(g, fn) { const saved = state; state = Object.assign({}, saved, g, { phase: 'play' }); try { return fn(); } finally { state = saved; } }
 
-  const ui = { sheet: null, draft: null, editIndex: -1, confirmDel: false, confirmReset: false, bump: false, setup: null };
+  const ui = { sheet: null, draft: null, editIndex: -1, confirmDel: false, confirmReset: false, bump: false, setup: null, memId: null, confirmMemDel: false };
   const app = document.getElementById('app');
   const sheetEl = document.getElementById('sheet');
   const toastEl = document.getElementById('toast');
@@ -482,6 +498,11 @@ label.f input, label.f select { padding: 9px 10px; border-radius: 10px; border: 
   // ---------- main ----------
   function render() {
     if (state.phase === 'setup') { if (!ui.setup) initSetup(); renderSetup(); return; }
+    app.innerHTML = playHtml(false);
+    ui.bump = false;
+  }
+  // memo = true renders a read-only archived game (inside the memory sheet).
+  function playHtml(memo) {
     const tot = totals();
     const sd = sides();
     const T = sd.map((s) => sideSum(tot, s));
@@ -495,7 +516,7 @@ label.f input, label.f select { padding: 9px 10px; border-radius: 10px; border: 
 
     const dotCount = state.target > 0 ? state.target : Math.max(n + 1, 4);
     const dots = Array.from({ length: dotCount }, (_, k) => {
-      if (k === n && !done) return '<i class="next"></i>';
+      if (k === n && !done && !memo) return '<i class="next"></i>';
       if (k >= n) return '<i></i>';
       const w = handWinnerSide(state.hands[k]);
       return w === -1 ? '<i class="wx"></i>' : `<i class="w c${sd[w].c}"></i>`;
@@ -507,7 +528,7 @@ label.f input, label.f select { padding: 9px 10px; border-radius: 10px; border: 
     const card = (s, k) => `
       <article class="team c${s.c} ${lead === k ? 'lead' : ''}" aria-label="${esc(s.n)}">
         <div class="team-head"><h2>${esc(s.n)}</h2>${lead === k ? '<span class="lead-chip">Önde</span>' : (n && T[k] > best ? `<span class="behind">+${fmt(T[k] - best)}</span>` : '')}</div>
-        <div class="bigtile ${ui.bump ? 'bump' : ''}"><span class="num">${fmt(T[k])}</span><i class="dot"></i></div>
+        <div class="bigtile ${ui.bump && !memo ? 'bump' : ''}"><span class="num">${fmt(T[k])}</span><i class="dot"></i></div>
         ${esli
           ? `<ul class="players">${s.seats.map((i) => `<li><span>${esc(pname(i))}</span><b class="num">${fmt(tot[i])}</b></li>`).join('')}</ul>`
           : `<div class="meta"><span><b>${order.indexOf(k) + 1}.</b> sıra</span><span><b>${st[k].fin}</b> bitirme</span></div>`}
@@ -519,7 +540,7 @@ label.f input, label.f select { padding: 9px 10px; border-radius: 10px; border: 
         <span class="cnt num">${n}<small> / ${state.target || '∞'}</small></span>
         <div class="dots" aria-hidden="true">${dots}</div>
         <div class="diff">${lead === -1 ? (n ? 'Eşitlik var' : 'Henüz el yok') : esli ? `Fark <b class="num">${fmt(Math.abs(T[0] - T[1]))}</b>` : `Lider <b>${esc(sd[lead].n)}</b>`}</div>
-        ${done ? '' : `<div class="dealer">${ICON_DEAL}Dağıtan <b>${esc(nextDealer)}</b></div>`}
+        ${done || memo ? '' : `<div class="dealer">${ICON_DEAL}Dağıtan <b>${esc(nextDealer)}</b></div>`}
       </div>`;
     const board = esli ? card(sd[0], 0) + round + card(sd[1], 1) : round + sd.map(card).join('');
 
@@ -528,14 +549,14 @@ label.f input, label.f select { padding: 9px 10px; border-radius: 10px; border: 
     const rows = state.hands.map((h, k) => {
       const s = calc(h); const kat = katOf(h);
       const cell = (i) => `<td class="${s[i] < 0 ? 'neg' : ''}">${h.winner === i ? '<span class="fin">bitti</span>' : ''}${fmt(s[i])}</td>`;
-      return `<tr><td class="first"><button class="rowbtn" data-act="edit" data-i="${k}" aria-label="${k + 1}. eli düzenle">${k + 1}${PENCIL}</button>${kat > 1 ? `<span class="kat">×${kat}</span>` : ''}${h.winner === null ? '<span class="kat">taş bitti</span>' : ''}</td>` +
+      return `<tr><td class="first">${memo ? `<b>${k + 1}</b>` : `<button class="rowbtn" data-act="edit" data-i="${k}" aria-label="${k + 1}. eli düzenle">${k + 1}${PENCIL}</button>`}${kat > 1 ? `<span class="kat">×${kat}</span>` : ''}${h.winner === null ? '<span class="kat">taş bitti</span>' : ''}</td>` +
         sd.map((x) => x.seats.map(cell).join('') + (esli ? `<td class="sum c${x.c}">${fmt(sideSum(s, x))}</td>` : '')).join('') + '</tr>';
     }).join('');
     const foot = `<tfoot><tr><td class="first">Toplam</td>${sd.map((x, k) => x.seats.map((i) => `<td class="c${x.c}">${fmt(tot[i])}</td>`).join('') + (esli ? `<td class="sum c${x.c}">${fmt(T[k])}</td>` : '')).join('')}</tr></tfoot>`;
 
     // game over
     let overHtml = '';
-    if (done) {
+    if (done && !memo) {
       const rain = Array.from({ length: 16 }, (_, k) => `<i class="c${k % 4}" style="left:${(k * 6.3 + Math.random() * 4).toFixed(1)}%;animation-delay:${(Math.random() * 1.2).toFixed(2)}s;--r:${Math.round(Math.random() * 120 - 60)}deg">${1 + Math.floor(Math.random() * 13)}</i>`).join('');
       overHtml = `<div class="over" role="status"><div class="rain" aria-hidden="true">${rain}</div><div><strong>${lead === -1 ? 'Berabere bitti' : esc(sd[lead].n) + ' kazandı'}</strong>${lead === -1 ? 'Önde olanlar eşit puanda.' : (esli ? fmt(Math.abs(T[0] - T[1])) + ' puan farkla, ' : fmt(best) + ' puanla, ') + n + ' elin sonunda.'}</div>
         <div class="ob"><button data-act="rematch">Rövanş</button><button class="alt" data-act="toSetup">Masayı değiştir</button></div></div>`;
@@ -579,7 +600,14 @@ label.f input, label.f select { padding: 9px 10px; border-radius: 10px; border: 
         <dt>Taş bitti</dt><dd>Kimse bitiremezse herkes elini yazar.</dd>
       </dl><p class="hint" style="margin:0 0 14px">En düşük puan kazanır.</p></details>`;
 
-    app.innerHTML = `
+    if (memo) return `
+      <section class="board ${esli ? '' : 'solo'}" aria-label="Son skor">${board}</section>
+      <div class="section-h"><h2>Eller</h2></div>
+      <div class="ledger"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody>${foot}</table></div>
+      ${chart}
+      ${statsHtml}`;
+
+    return `
       <header class="top">
         <div class="brand"><div class="mini-tile" aria-hidden="true">101</div><div><h1>${esli ? 'Eşli' : 'Tekli'} 101</h1><p>${state.mode.katla ? 'Katlamalı' : 'Katlamasız'} · ${state.target ? state.target + ' el' : 'sınırsız'}</p></div></div>
         <span class="sp"></span>${ser}
@@ -593,9 +621,73 @@ label.f input, label.f select { padding: 9px 10px; border-radius: 10px; border: 
       ${chart}
       ${statsHtml}
       ${rules}
-      ${state.archive.length ? `<div class="section-h"><h2>Önceki oyunlar</h2></div><ul class="archive">${state.archive.slice().reverse().map((g) => `<li><span><b>${esc(g.result)}</b> <span class="muted">· ${esc(g.date)} · ${esc(g.mode)} · ${g.hands} el</span></span><span class="num">${esc(g.line)}</span></li>`).join('')}</ul>` : ''}
+      ${memoriesHtml()}
     `;
-    ui.bump = false;
+  }
+
+  // ---------- memories (archived games) ----------
+  function memoriesHtml() {
+    const list = state.archive.slice().reverse();
+    const tools = `<div class="row-btns"><button class="ghost" data-act="exportMem" ${list.length ? '' : 'disabled'}>Anıları yedekle</button><label class="ghost filebtn" for="mem-import">Yedekten yükle</label><input type="file" id="mem-import" accept="application/json,.json" hidden></div>`;
+    return `<div class="section-h"><h2>Anılar</h2><span>${list.length ? list.length + ' oyun saklanıyor' : 'Biten oyunlar burada saklanır'}</span></div>
+      ${list.length ? `<div class="memories">${list.map(memCard).join('')}</div>` : '<div class="ledger"><div class="empty">Bir oyun bitip “Rövanş” ya da “Masayı değiştir” dediğinizde, o oyun bütün elleriyle buraya eklenir.</div></div>'}
+      ${tools}`;
+  }
+  function memCard(m) {
+    const c = typeof m.wc === 'number' ? ` c${m.wc}` : '';
+    return `<button class="memcard${c}" data-act="openMem" data-id="${esc(m.id)}">
+        <span class="mt num" aria-hidden="true">${m.hands}</span>
+        <span class="md">${esc(m.date)} · ${esc(m.mode)}</span>
+        <span class="mw">${esc(m.result)}</span>
+        <span class="ml num">${esc(m.line)}</span>
+        ${m.note ? `<span class="mn">${esc(m.note)}</span>` : ''}
+      </button>`;
+  }
+  function memoryHtml() {
+    const m = state.archive.find((x) => x.id === ui.memId);
+    if (!m) return '';
+    const detail = m.game
+      ? asGame(m.game, () => playHtml(true))
+      : `<div class="ledger"><div class="empty">${esc(m.line)}<br>Bu oyun eski sürümde kaydedildiği için el ayrıntısı yok.</div></div>`;
+    return `<div class="sheet-wrap"><div class="sheet-backdrop" data-act="close"></div>
+      <div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+        <header class="sheet-head"><div><h2 id="sheet-title">${esc(m.result)}</h2><p>${esc(m.date)} · ${esc(m.mode)} · ${m.hands} el</p></div><button class="x" data-act="close" aria-label="Kapat">×</button></header>
+        <div class="sheet-body">
+          <label class="f memo-note">Not<textarea id="mem-note" maxlength="400" placeholder="Bu oyundan aklınızda kalan: kim okeyle bitirdi, nerede oynadınız…">${esc(m.note || '')}</textarea></label>
+          ${detail}
+        </div>
+        <footer class="sheet-foot"><div class="foot-btns">
+          <button class="danger ${ui.confirmMemDel ? 'armed' : ''}" data-act="delMem">${ui.confirmMemDel ? 'Eminim, sil' : 'Anıyı sil'}</button>
+          <button class="primary" data-act="close">Kapat</button>
+        </div></footer>
+      </div></div>`;
+  }
+  function exportMemories() {
+    const data = JSON.stringify({ app: '101-defteri', version: 1, exportedAt: new Date().toISOString(), archive: state.archive }, null, 2);
+    try {
+      const url = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = '101-anilar-' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      showToast(state.archive.length + ' oyun yedek dosyasına yazıldı');
+    } catch (e) { showToast('Yedek dosyası indirilemedi.'); }
+  }
+  function importMemories(file) {
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const d = JSON.parse(r.result);
+        const list = Array.isArray(d) ? d : d.archive;
+        if (!Array.isArray(list)) throw new Error('bad');
+        const have = new Set(state.archive.map((m) => m.id));
+        const add = list.filter((m) => m && m.id && m.result && !have.has(m.id));
+        state.archive = state.archive.concat(add).sort((a, b) => String(a.at || '').localeCompare(String(b.at || '')));
+        save(); render();
+        showToast(add.length ? add.length + ' oyun anılara eklendi' : 'Yedekteki oyunların hepsi zaten burada');
+      } catch (e) { showToast('Bu dosya bir 101 Defteri yedeği değil.'); }
+    };
+    r.readAsText(file);
   }
 
   // ---------- toast / undo ----------
@@ -619,7 +711,7 @@ label.f input, label.f select { padding: 9px 10px; border-radius: 10px; border: 
   function renderSheet() {
     const prev = sheetEl.querySelector('.sheet-body'); const st = prev ? prev.scrollTop : 0;
     document.documentElement.style.overflow = 'hidden';
-    sheetEl.innerHTML = ui.sheet === 'entry' ? entryHtml() : settingsHtml();
+    sheetEl.innerHTML = ui.sheet === 'entry' ? entryHtml() : ui.sheet === 'memory' ? memoryHtml() : settingsHtml();
     const body = sheetEl.querySelector('.sheet-body'); if (body) body.scrollTop = st;
     if (ui.sheet === 'entry') updatePreview();
   }
@@ -721,7 +813,7 @@ label.f input, label.f select { padding: 9px 10px; border-radius: 10px; border: 
             <button class="ghost" data-act="rematch">Yeni oyun, aynı masa</button>
             <button class="ghost" data-act="toSetup">Eşli/tekli ya da katlamayı değiştir</button>
             <button class="danger ${ui.confirmReset ? 'armed' : ''}" data-act="reset">${ui.confirmReset ? 'Eminim, her şeyi sil' : 'Her şeyi sıfırla'}</button>
-          </div><p class="hint">Yeni oyun elleri temizler, oynanan oyun “Önceki oyunlar”a eklenir. Sıfırlama seri skorunu ve geçmişi de siler.</p></section>
+          </div><p class="hint">Yeni oyun elleri temizler, oynanan oyun bütün elleriyle “Anılar”a eklenir. Sıfırlama masayı ve seri skorunu siler; anılar kalır.</p></section>
         </div>
         <footer class="sheet-foot"><div class="foot-btns"><button class="primary" data-act="saveSettings">Kaydet</button></div></footer>
       </div></div>`;
@@ -742,13 +834,18 @@ label.f input, label.f select { padding: 9px 10px; border-radius: 10px; border: 
     const w = leaderIdx(T);
     const finished = state.target > 0 && state.hands.length >= state.target;
     if (finished && w !== -1) state.series[w]++;
+    const now = new Date();
     state.archive.push({
-      date: new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }),
-      mode: modeLabel(state.mode), hands: state.hands.length,
+      id: now.getTime().toString(36) + Math.random().toString(36).slice(2, 6),
+      at: now.toISOString(),
+      date: now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }),
+      mode: modeLabel(state.mode), hands: state.hands.length, finished,
       result: w === -1 ? 'Berabere' : sd[w].n + (finished ? ' kazandı' : ' öndeydi'),
-      line: sd.map((s, k) => s.n + ' ' + fmt(T[k])).join(' · ')
+      wc: w === -1 ? null : sd[w].c,
+      line: sd.map((s, k) => s.n + ' ' + fmt(T[k])).join(' · '),
+      note: '',
+      game: { mode: clone(state.mode), teams: sd.length === 2 ? [tname(0), tname(1)] : state.teams.slice(), players: [0, 1, 2, 3].map((i) => pname(i)), target: state.target, esRule: state.esRule, firstDealer: state.firstDealer, hands: clone(state.hands) }
     });
-    if (state.archive.length > 40) state.archive.shift();
     state.firstDealer = dealerOf(state.hands.length);
     state.hands = [];
   }
@@ -798,12 +895,26 @@ label.f input, label.f select { padding: 9px 10px; border-radius: 10px; border: 
       case 'saveSettings': saveSettings(); break;
       case 'reset':
         if (!ui.confirmReset) { ui.confirmReset = true; renderSheet(); }
-        else { state = defaults(); save(); closeSheet(); ui.setup = null; render(); window.scrollTo(0, 0); }
+        else { archiveCurrent(); const keep = state.archive; state = defaults(); state.archive = keep; save(); closeSheet(); ui.setup = null; render(); window.scrollTo(0, 0); }
         break;
+      // memories
+      case 'openMem': ui.memId = b.dataset.id; ui.confirmMemDel = false; ui.sheet = 'memory'; hideToast(); renderSheet(); break;
+      case 'delMem':
+        if (!ui.confirmMemDel) { ui.confirmMemDel = true; renderSheet(); }
+        else {
+          const at = state.archive.findIndex((m) => m.id === ui.memId);
+          if (at >= 0) { const removed = state.archive.splice(at, 1)[0]; save(); closeSheet(); render(); showToast('Anı silindi', () => { state.archive.splice(at, 0, removed); }); }
+        }
+        break;
+      case 'exportMem': exportMemories(); break;
     }
+  });
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'mem-import' && e.target.files && e.target.files[0]) { importMemories(e.target.files[0]); e.target.value = ''; }
   });
   document.addEventListener('input', (e) => {
     const t = e.target;
+    if (t.id === 'mem-note') { const m = state.archive.find((x) => x.id === ui.memId); if (m) { m.note = t.value; save(); } return; }
     if (t.dataset && t.dataset.setup && ui.setup) {
       ui.setup[t.dataset.setup][Number(t.dataset.i)] = t.value;
       if (t.dataset.setup === 'players') { const el = document.getElementById('su-dn' + t.dataset.i); if (el) el.textContent = sname(Number(t.dataset.i)); }
